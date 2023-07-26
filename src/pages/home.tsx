@@ -33,6 +33,24 @@ interface Item {
   QNTD: number;
 }
 
+const customScrollbarStyle = `
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(00, 0, 0, 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+`;
+
 
 
 const ExtractPage = () => {
@@ -72,11 +90,11 @@ const ExtractPage = () => {
         <div className="absolute z-10">
           <Navbar />
         </div>
-        <div className="h-screen justify-center items-center w-screen ml-72 mr-20 pt-10">
+        <div className="h-full justify-center items-center w-screen ml-72 mr-20 pt-10">
           <div className="">
             <div className="flex flex-col justify-center items-center ">
               <h1 className="mb-5 text-xl font-semibold">
-                Extração de dados - Nota de Satiscação
+                Extração de dados - Nota de Satisfação
               </h1>
               {/* data de inicio */}
               <div className="flex gap-4">
@@ -148,14 +166,17 @@ const ExtractPage = () => {
               </Button>
             </div>
           </div>
-          <div className="">
-            <Table className="w-full bg-zinc-950">
-              <ScrollArea className="h-[550px] w-full rounded-xl border border-white/20 p-4">
+            <ScrollArea
+              className={`
+                  h-[410px] w-full rounded-xl border bg-zinc-950 p-4 border-white/20 
+                `}
+            >
+              <Table className="">
                 <TableCaption>
                   Sem dados por enquanto...
                 </TableCaption>
-                <TableHeader className="text-sm w-full text-zinc-100 text-center uppercase">
-                  <TableRow className="w-full border-none">
+                <TableHeader className="text-sm text-zinc-100 text-center uppercase">
+                  <TableRow className=" border-none">
                     <TableHead>Data</TableHead>
                     <TableHead>Shopping</TableHead>
                     <TableHead>Nota</TableHead>
@@ -180,9 +201,8 @@ const ExtractPage = () => {
                     </TableRow>
                   ))}
                 </TableBody>
-              </ScrollArea>
-            </Table>
-          </div>
+              </Table>
+            </ScrollArea>
         </div>
       </div>
     </div>
