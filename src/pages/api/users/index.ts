@@ -1,8 +1,8 @@
 // pages/api/getData.js
 
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 
-import sql from 'mssql';
+import sql from "mssql";
 const {
   DB_SERVER,
   DB_USER,
@@ -11,11 +11,12 @@ const {
   INSTANCIA,
 } = process.env;
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse){
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const { startDate, endDate, table } = req.query;
 
-  
   try {
     // Configuração de conexão com o banco de dados (substitua com suas credenciais)
     const config = {
@@ -27,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         encrypt: false, // Habilita a criptografia da conexão
         trustServerCertificate: true, // Permite confiar no certificado do servidor (apenas para desenvolvimento, NÃO use em produção)
         enableArithAbort: true, // Habilita o "aborto de aritmética", geralmente é necessário para evitar erros em algumas consultas
-        instanceName: INSTANCIA
+        instanceName: INSTANCIA,
       },
     };
 
@@ -35,13 +36,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await sql.connect(config);
 
     // Query para extrair os dados (substitua "tabela" pelo nome da tabela que deseja extrair)
-    const result = await sql.query(`SELECT * FROM NOTA WHERE data BETWEEN CAST('${startDate}' AS DATE) AND CAST('${endDate}' AS DATE) order by 1`);
-
+    const result = await sql.query(
+      `SELECT * FROM ${table} WHERE data BETWEEN CAST('${startDate}' AS DATE) AND CAST('${endDate}' AS DATE) order by 1`
+    );
 
     // Retorna os dados extraídos como resposta
     res.status(200).json(result.recordset);
   } catch (error) {
-    console.error('Erro ao obter dados:', error);
-    res.status(500).json({ error: 'Erro ao obter dados.' });
+    console.error("Erro ao obter dados:", error);
+    res.status(500).json({ error: "Erro ao obter dados." });
   }
 }

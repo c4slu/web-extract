@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import MenuBar from "../components/menubar";
 import Navbar from "../components/navbar";
-
 const ExtractPage = () => {
   const router = useRouter();
 
@@ -18,9 +18,14 @@ const ExtractPage = () => {
   return (
     <div>
       {isLoggedIn ? (
-        <div className="h-screen w-screen flex bg-black">
+        <div className="h-screen w-screen">
           <Navbar />
-          <p>PESQUISA</p>
+          <div className="flex text-white bg-black">
+            <div className="h-[calc(100vh-80px)] border-r-[1px] border-white/20">
+              <MenuBar />
+            </div>
+            <p>PESQUISA</p>
+          </div>
         </div>
       ) : null}
     </div>

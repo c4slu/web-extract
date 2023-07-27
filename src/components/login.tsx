@@ -6,7 +6,7 @@ import { Router, useRouter } from 'next/router';
 import { Input } from "@/components/ui/input"
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import logo from '../../public/logo_tel.png'
+import  logo  from '../../public/logo_tel.png'
 import Image from 'next/image';
 
 
