@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import MenuBar from "../components/menubar";
 import Navbar from "../components/navbar";
-import Combobox from "../components/combobox";
 import axios from "axios";
 import {
   Table,
@@ -15,7 +14,7 @@ import {
   TableRow,
 } from "../components/ui/table";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon , Download, Loader2} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,11 +24,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { saveAs } from 'file-saver';
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { Check, ChevronsUpDown } from "lucide-react";
-
 import {
   Command,
   CommandEmpty,
@@ -37,6 +36,7 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
+import { useRouter } from "next/router";
 
 const frameworks = [
   {
@@ -53,61 +53,86 @@ interface Item {
   DATA: string;
   SHOPPING: string;
   Nota: number;
-  Alerta: string;
+  ALERTA: string;
   QNTD: number;
 }
-
-const customScrollbarStyle = `
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: rgba(00, 0, 0, 0.5);
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-  }
-
-  ::-webkit-scrollbar-track {
-    background-color: rgba(0, 0, 0, 0.2);
-  }
-`;
+const checkAuthentication = () => {
+    const authToken = localStorage.getItem("token"); // Ou qualquer outra forma de obter o token
+    return !!authToken; // Retorna true se o token existir, ou false se não existir
+};
 
 const ExtractPage = () => {
-  const [startDate, setStartDate] = useState<Date>();
 
+  const router = useRouter()
+  useEffect(() => {
+    const isAuthenticated = checkAuthentication();
+
+    // Se o usuário não estiver autenticado (ou seja, não tiver o token)
+    // redirecionar para a página de login
+    if (!isAuthenticated) {
+      router.push("/login"); // Redirecionar para a página de login
+    }
+  }, []);
+  
+  const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [data, setData] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [download, setdownload] = React.useState(false);
+  
 
+  const start_f =
+    startDate instanceof Date
+      ? format(startDate, "yyyy-MM-dd")
+      : "";
+  const end_f =
+    endDate instanceof Date
+      ? format(endDate, "yyyy-MM-dd")
+      : "";
   const handleGetData = async () => {
-    const start_f =
-      startDate instanceof Date
-        ? format(startDate, "yyyy-MM-dd")
-        : "";
-    const end_f =
-      endDate instanceof Date
-        ? format(endDate, "yyyy-MM-dd")
-        : "";
+
+    setLoading(true);
+    setdownload(false)
 
     try {
       const response = await axios.get(
         `/api/users?startDate=${start_f}&endDate=${end_f}&table=${value}`
       );
+      setLoading(false); 
+      setdownload(true);
       setData(response.data);
-      console.log(response.data);
-      console.log(start_f);
-      console.log(end_f);
     } catch (error) {
       console.error(error);
+      setLoading(false); 
     }
   };
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
 
+  console.log(value)
+
   const cabecalho =
     data.length > 0 ? Object.keys(data[0]) : [];
+
+  async function fetchDataDownload(){
+    const csvData = `${cabecalho}\n${data
+      .map(
+        (item) =>
+          `${item.DATA},${item.SHOPPING},${
+            value == "nota" ? item.Nota : item.ALERTA
+          },${item.QNTD}`
+      )
+      .join("\n")}`;
+    const blob = new Blob([csvData], {
+      type: "text/csv",
+    });
+
+    saveAs(blob, "dados.csv");
+
+  }
+
+
+
 
   return (
     <div className="h-screen w-screen">
@@ -116,11 +141,11 @@ const ExtractPage = () => {
         <div className="h-[calc(100vh-80px)] border-r-[1px] border-white/20">
           <MenuBar />
         </div>
-        <div className="h-full justify-center items-center w-full ml-20 mr-20 pt-10">
+        <div className="h-full justify-center items-center w-full ml-20 mr-20 pt-3">
           <div className="">
             <div className="flex flex-col justify-center items-center ">
               <h1 className="mb-5 text-xl font-semibold">
-                Extração de dados - Nota de Satisfação
+                Extração de dados
               </h1>
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
@@ -141,15 +166,16 @@ const ExtractPage = () => {
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0 bg-black rounded">
                   <Command>
-                    <CommandInput placeholder="Search framework..." />
+                    <CommandInput placeholder="Search table..." />
                     <CommandEmpty>
-                      No framework found.
+                      Tabela não encontrada.
                     </CommandEmpty>
                     <CommandGroup>
                       {frameworks.map((framework) => (
                         <CommandItem
                           key={framework.value}
                           onSelect={(currentValue) => {
+                            setData([]);
                             setValue(
                               currentValue === value
                                 ? ""
@@ -234,18 +260,35 @@ const ExtractPage = () => {
                 </Popover>
               </div>
             </div>
-            <div className="flex items-center justify-center w-full">
+            <div className="flex items-center gap-2 justify-center w-full">
               <Button
                 className="border-[1px] border-white/30 hover:bg-violet-500 hover:border-none transition-colors duration-200  my-5 px-10 rounded"
                 onClick={handleGetData}
+                disabled={
+                  endDate && startDate && value && start_f < end_f
+                    ? false
+                    : true
+                }
               >
-                Consultar
+                {loading ? (
+                  <Loader2 className="animate-spin"/>
+                ) : (
+                  <span>Consultar</span>
+                )}
+              </Button>
+              <Button
+                className="border-[1px] gap-2 border-white/30 hover:bg-violet-500 hover:border-none transition-colors duration-200  my-5 px-8 rounded"
+                onClick={fetchDataDownload}
+                disabled={download ? false : true}
+              >
+                <Download width={20} height={20} />
+                Download
               </Button>
             </div>
           </div>
           <ScrollArea
             className={`
-                  h-[calc(100vh-320px)] w-full rounded-xl border bg-zinc-950 p-4 border-white/20 
+                  h-[calc(100vh-350px)] w-full rounded-xl border bg-zinc-950 p-4 border-white/20 
                 `}
           >
             <Table className="">
@@ -271,9 +314,9 @@ const ExtractPage = () => {
                       {item.SHOPPING}
                     </TableCell>
                     <TableCell className="text-xs px-6 py-4 border-b-[1px] border-white/20">
-                      {value == "NOTA"
+                      {value == "nota"
                         ? item.Nota
-                        : item.Alerta}
+                        : item.ALERTA}
                     </TableCell>
                     <TableCell className="text-xs px-6 py-4 border-b-[1px] border-white/20">
                       {item.QNTD}

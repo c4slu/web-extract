@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import MenuBar from "../components/menubar";
 import Navbar from "../components/navbar";
-
 const ExtractPage = () => {
   const router = useRouter();
 
@@ -25,7 +24,7 @@ const ExtractPage = () => {
             <div className="h-[calc(100vh-80px)] border-r-[1px] border-white/20">
               <MenuBar />
             </div>
-            <p>NOTA</p>
+            <p>Acesse nosso PBI</p>
           </div>
         </div>
       ) : null}

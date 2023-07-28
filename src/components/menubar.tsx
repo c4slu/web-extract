@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { BsFillGridFill, BsSearch, BsPostcardHeart } from "react-icons/bs";
 import Image from "next/image";
+import { AreaChart, FolderDown, LogOut } from "lucide-react";
 
 export default function MenuBar() {
     const router = useRouter();
@@ -11,26 +12,26 @@ export default function MenuBar() {
     {
       id: 1,
       name: "Home",
-      icon: <BsFillGridFill className="text-base" />,
+      icon: <FolderDown className="w-5 h-5" />,
     },
     {
       id: 2,
-      name: "Pesquisa",
-      icon: <BsSearch className="text-base" />,
-    },
-    {
-      id: 3,
-      name: "Nota",
-      icon: <BsPostcardHeart className="text-base" />,
-    },
+      name: "pbi",
+      icon: <AreaChart className="w-5 h-5"/>
+    }
   ];
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push("/login")
+  }
+
   const [hovered, setHovered] = useState("");
   return (
     <div className="bg-black">
       <div className="flex flex-col ">
-        <div className="w-[100px] flex flex-col justify-center items-center  bg-black">
-          <nav className="h-full  flex items-center ">
-            <ul className="flex-col">
+        <div className="w-[100px] h-[calc(100vh-125px)] flex flex-col items-center justify-between bg-black">
+          <nav className="h-full flex  items-center ">
+            <ul className="flex-col  h-full">
               {pages.map((page) => {
                 const path = `/${page.name.toLowerCase()}`;
                 const isHovered = hovered === page.name;
@@ -79,6 +80,13 @@ export default function MenuBar() {
             </ul>
           </nav>
         </div>
+        <button onClick={handleLogout}>
+          <div className="w-full flex flex-col list-none justify-center items-center">
+            <li className="p-3 rounded hover:bg-white/10 cursor-pointer">
+              <LogOut className="h-4" />
+            </li>
+          </div>
+        </button>
       </div>
     </div>
   );
