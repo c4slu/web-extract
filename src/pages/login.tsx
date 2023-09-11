@@ -13,13 +13,12 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import logo from "../../public/logo_tel.png";
-
+import { Eye, EyeOff, Loader2, Check, Ban } from "lucide-react";
 
 const checkAuthentication = () => {
   const authToken = localStorage.getItem("token"); // Ou qualquer outra forma de obter o token
   return !!authToken; // Retorna true se o token existir, ou false se não existir
 };
-
 
 interface Props {
   setLoggedIn: (isLoggedIn: boolean) => void;
@@ -40,9 +39,14 @@ const Login: React.FC<Props> = ({ setLoggedIn }) => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [site, setSite] = useState("");
-
+  const [loading, setloading] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false); // Estado para controlar a visibilidade da senha
   const [loginMessage, setloginMessage] = useState("");
+  const [statusLogin, setStatusLogin] = useState(false);
 
+  const toggleSenha = () => {
+    setMostrarSenha(!mostrarSenha);
+  };
 
   const handleLogin = async () => {
     const credentials = {
@@ -50,6 +54,8 @@ const Login: React.FC<Props> = ({ setLoggedIn }) => {
       senha: password,
       site: site,
     };
+
+    setloading(true);
 
     const options = {
       method: "POST",
@@ -64,25 +70,28 @@ const Login: React.FC<Props> = ({ setLoggedIn }) => {
         options
       );
       const data = await response.json();
+      setStatusLogin(true);
       console.log(data);
       if (data.erro == "false") {
         let secret =
           "9bd3717297e6ef69383e2f7999eb7131448e3333f74fa613a09677ca250408e2";
         const token = jwt.sign(credentials, secret);
         localStorage.setItem("token", token);
-        
+
         if (token) {
-           router.push("./home");
-         }
+          router.push("./home");
+        }
+        setloading(false);
       } else {
         console.log("off");
         setloginMessage(data.message);
+        setloading(false);
       }
     } catch (err) {
       console.error(err);
+      setStatusLogin(false);
     }
   };
-
 
   return (
     <div>
@@ -96,21 +105,25 @@ const Login: React.FC<Props> = ({ setLoggedIn }) => {
               className="m-3 flex items-center"
               alt=""
             />
-            <CardTitle>
-              Extração de dados - Aliansce
-            </CardTitle>
+            <CardTitle>Extração de dados - Aliansce</CardTitle>
             <CardDescription className="text-gray-400">
               Faça seu login para acessar as informações
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col justify-center items-center">
             <Input
-              type="text"
+              list="sites-list"
               placeholder="Site"
               value={site}
               onChange={(e) => setSite(e.target.value)}
               className="rounded mb-4"
             />
+            <datalist id="sites-list">
+              <option value="Barueri"></option>
+              <option value="SSA"></option>
+              <option value="Matriz"></option>
+              <option value="Itabuna"></option>
+            </datalist>
             <Input
               type="text"
               placeholder="Login"
@@ -119,24 +132,33 @@ const Login: React.FC<Props> = ({ setLoggedIn }) => {
               className="rounded mb-4"
             />
             <Input
-              type="password"
+              type={mostrarSenha ? "text" : "password"}
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="rounded"
             />
+            <button
+              type="button"
+              onClick={toggleSenha}
+              className="relative -top-8 left-44 text-xs disabled:text-zinc-700 disabled:cursor-not-allowed"
+              disabled={password ? false : true}>
+              {mostrarSenha ? <EyeOff /> : <Eye />}
+            </button>
           </CardContent>
           <CardFooter className="flex flex-col">
             <Button
               onClick={handleLogin}
-              className="w-full flex flex-col justify-center items-center border-[1px] border-white/30 hover:bg-violet-500 hover:border-none rounded"
-            >
-              Entrar
+              disabled={site && userName && password ? false : true}
+              className="w-full flex flex-col justify-center items-center border-[1px] border-white/30 hover:bg-violet-500 hover:border-none rounded">
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <span>Entrar</span>
+              )}
             </Button>
 
-            <p className="mt-4 text-gray-400">
-              {loginMessage}
-            </p>
+            <p className="mt-4 text-gray-400">{loginMessage}</p>
           </CardFooter>
         </Card>
       </div>
