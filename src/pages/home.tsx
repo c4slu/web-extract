@@ -127,7 +127,7 @@ const ExtractPage = () => {
       type: "text/csv",
     });
 
-    saveAs(blob, "dados.csv");
+    saveAs(blob, `data_${startDate}_${end_f}.csv`);
 
   }
 

@@ -11,7 +11,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   }, []);
 
   return (
-    <div>
+    <div className="bg-black">
       {/* Aqui você pode colocar um cabeçalho, um menu ou qualquer outro layout comum a todas as páginas */}
       <Component {...pageProps} />
     </div>
